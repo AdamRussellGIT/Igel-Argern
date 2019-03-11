@@ -72,46 +72,53 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
     int counter = 0;
     int rowChoice;
     char colour;
+    int k=0;
+    int p=0;
+    int tkn=1;
     
-    while (counter < numPlayers)
+    
+    while (counter < numPlayers*4)
     {
-        printf("%s:Which row (in the first column), would you like to place your first token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
-        scanf("%d", &rowChoice);
-        
-        //prevents player from putting a token in a square where another token already lies
-        while (board[rowChoice][0].stack != NULL)
+        if(k>=numPlayers)
         {
-            printf("There is already a token there, choose another row now: ");
-            scanf("%d", &rowChoice);
+            k=0;
+            tkn++;
         }
-        
-        board[rowChoice][0].stack = &players[counter].col;
-  
-        counter++;
-    }
-    
-    print_board(board);
-    
-    counter = 0;
-    
-    while (counter < numPlayers)
-    {
-        printf("%sWhich row (in the first column), would you like to place your second token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
-        scanf("%d", &rowChoice);
-        
-        //prevents player from putting a token in a square where another token already lies
-        /*while (board[rowChoice][0].stack != NULL)
+        if(counter>=numPlayers)
         {
-            printf("There is already a token there, choose another row now: ");
-            scanf("%d", &rowChoice);
-        }*/
+            counter=0;
+        }
+        printf("%s:Which row (in the first column), would you like to place your token %d?(Choose between 0 and 5 inclusive): ", players[k].playerName,tkn);
+        scanf("%d", &rowChoice);
+       
         
-        board[rowChoice][0].stack = &players[counter].col;
-  
+        do
+        {
+            if(p<=5)
+            {
+                //prevents player from putting a token in a square where another token already lies while there are empty boxes
+                while (board[rowChoice][0].stack != NULL)
+                {
+                    printf("\nCan't place a token on another one until all boxes are taken!, choose another row now: \n");
+                    scanf("%d", &rowChoice);
+                }
+            }
+            
+            /*while(board[rowChoice][0].stack==players[k].col)//After all the rows in the first column have been filled , how do I prevent stacking on the same color and incorporate even stacking?
+            {
+                printf("Can't stack on your own color, choose another row: \n");
+                scanf("%d",&rowChoice);
+            }*/
+            board[rowChoice][0].stack = &players[counter].col;
+            p++;
+
+        }while(board[0][0].stack==NULL&&board[1][0].stack==NULL&&board[2][0].stack==NULL&&board[3][0].stack==NULL&&board[4][0].stack==NULL&&board[5][0].stack==NULL);
         counter++;
+        k++;
+        print_board(board);
     }
     
-    print_board(board);
+
 }
         
     
