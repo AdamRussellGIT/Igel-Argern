@@ -75,17 +75,38 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
     
     while (counter < numPlayers)
     {
-        printf("Adam's token is %d\n\n", players[counter].col);
         printf("%s:Which row (in the first column), would you like to place your first token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
         scanf("%d", &rowChoice);
         
+        //prevents player from putting a token in a square where another token already lies
         while (board[rowChoice][0].stack != NULL)
         {
             printf("There is already a token there, choose another row now: ");
             scanf("%d", &rowChoice);
         }
         
-       
+        board[rowChoice][0].stack = &players[counter].col;
+  
+        counter++;
+    }
+    
+    print_board(board);
+    
+    counter = 0;
+    
+    while (counter < numPlayers)
+    {
+        printf("%sWhich row (in the first column), would you like to place your second token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
+        scanf("%d", &rowChoice);
+        
+        //prevents player from putting a token in a square where another token already lies
+        /*while (board[rowChoice][0].stack != NULL)
+        {
+            printf("There is already a token there, choose another row now: ");
+            scanf("%d", &rowChoice);
+        }*/
+        
+        board[rowChoice][0].stack = &players[counter].col;
   
         counter++;
     }
@@ -107,5 +128,5 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
  */
 
 void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
-    //TO BE IMPLEMENTED
+    
 }
