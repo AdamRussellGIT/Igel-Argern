@@ -135,5 +135,31 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
  */
 
 void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
+    //PartA
+    //check while if anyone has won
+    //Check the same for three colors, print winner depending on the color they have chosen to comparing to the three chosen colors
+    //counter=0
+    //while counter<numPlayers
+    
+    //Part B 
+    //dice roll functionality
+    //Ask if want option to move his own token 
+    //Ask row and column
+    //Ask up or down
+    //Check for obstacle squares
+    //Catch for out of bounds
+    //Throw back to selection menu for the choosing desired token
+    //if they don't give a valid response ask again
+    
+    //Part C
+    //Check if any tokens in the row selected by dice (ASK THE DOC FOR RULES) re-roll if no tokens in row
+    //Tell the dice roll row to the player
+    //Do while Ask which column then want to make sure there is a token in it
+    //Check for obstacles squares
+    //Move token forward
+    //Make sure the token that had the moved token has the correct token  
+    
+    
+    
     
 }
