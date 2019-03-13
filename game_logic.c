@@ -181,6 +181,8 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             
             
             //END OF TURN MISC
+            playerTurn++;
+            
             printf("Here is what the board currently looks like!\n\n");
             print_board(board);
             
