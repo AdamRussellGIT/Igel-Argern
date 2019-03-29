@@ -1,6 +1,7 @@
 #include "game_init.h"
 #include "game_logic.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void printLine();
 
@@ -68,54 +69,58 @@ void printLine(){
  *        players - the array of the players
  *        numPlayers - the number of players  
  */
-void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
-    int counter = 0;
-    int rowChoice;
-    char colour;
-    int k=0;
-    int p=0;
-    int tkn=1;
+void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
+{
+  //the min number of tokens placed on a square in the first column of the board
+    int minNumOfTokens=0;
+    int selectedSquare=0;
     
-    
-    while (counter < numPlayers*4)
+    for(int p=0;p<9;p++)
     {
-        if(k>=numPlayers)
+        for(int k=0;k<6;k++)
         {
-            k=0;
-            tkn++;
+            board[p][k].numTokens=0;
         }
-        if(counter>=numPlayers)
+    }
+    
+    
+
+    for(int i=0;i<4;i++)
+    {
+        for(int j=0;j<numPlayers;j++)
         {
-            counter=0;
-        }
-        printf("%s:Which row (in the first column), would you like to place your token %d?(Choose between 0 and 5 inclusive): ", players[k].playerName,tkn);
-        scanf("%d", &rowChoice);
-       
-        
-        do
-        {
-            if(p<=5)
-            {
-                //prevents player from putting a token in a square where another token already lies while there are empty boxes
-                while (board[rowChoice][0].stack != NULL)
+                   printf("Player %d please select a square\n",j);
+                   scanf("%d",&selectedSquare);
+
+                while((board[selectedSquare][0].numTokens!=minNumOfTokens))
                 {
-                    printf("\nCan't place a token on another one until all boxes are taken!, choose another row now: \n");
-                    scanf("%d", &rowChoice);
+                   printf("Player %d please select a square\n",j);
+                   scanf("%d",&selectedSquare);
                 }
+                if(board[selectedSquare][0].numTokens!=0)
+                {
+                    while(board[selectedSquare][0].stack->col==players[j].col)
+                    {
+                        printf("Player %d please select a valid square\n",j);
+                        scanf("%d",&selectedSquare);
+                    }
+                }
+                
+                
+                board[selectedSquare][0].stack=(token*)malloc(sizeof(token));
+                board[selectedSquare][0].stack->col=players[j].col;
+                board[selectedSquare][0].numTokens++;
+        
+
+            //updates the minimum number of Tokens
+            if(((numPlayers*i)+j+1)%NUM_ROWS==0)
+            {
+                minNumOfTokens++;
             }
             
-            /*while(board[rowChoice][0].stack==players[k].col)//After all the rows in the first column have been filled , how do I prevent stacking on the same color and incorporate even stacking?
-            {
-                printf("Can't stack on your own color, choose another row: \n");
-                scanf("%d",&rowChoice);
-            }*/
-            board[rowChoice][0].stack = &players[counter].col;
-            p++;
-
-        }while(board[0][0].stack==NULL&&board[1][0].stack==NULL&&board[2][0].stack==NULL&&board[3][0].stack==NULL&&board[4][0].stack==NULL&&board[5][0].stack==NULL);
-        counter++;
-        k++;
-        print_board(board);
+            print_board(board);
+        }
+        
     }
     
 
@@ -137,7 +142,7 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
 void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
     //PartA
     //check while if anyone has won
-    //Check the same for three colors, print winner depending on the color they have chosen to comparing to the three chosen colors
+    //Check the same for three colors, print winner depending on the color they have chosen to comparing to the three chosen color
     //counter=0
     //while counter<numPlayers
     
@@ -163,3 +168,4 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     
     
 }
+
