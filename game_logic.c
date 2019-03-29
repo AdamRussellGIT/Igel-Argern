@@ -69,59 +69,65 @@ void printLine(){
  *        players - the array of the players
  *        numPlayers - the number of players  
  */
-void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers)
-{
-  //the min number of tokens placed on a square in the first column of the board
-    int minNumOfTokens=0;
-    int selectedSquare=0;
+void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
+    int minNumOfTokens = 0;
+    int selectedSquare = 0;
     
-    for(int p=0;p<9;p++)
+    for (int k=0;k<9;k++)
     {
-        for(int k=0;k<6;k++)
+        for (int l=0;l<6;l++)
         {
-            board[p][k].numTokens=0;
+            board[k][l].numTokens = 0;
         }
     }
     
-    
-
-    for(int i=0;i<4;i++)
+    for (int i=0;i<4;i++)
     {
-        for(int j=0;j<numPlayers;j++)
+        for (int j=0;j<numPlayers;j++)
         {
-                   printf("Player %d please select a square\n",j);
-                   scanf("%d",&selectedSquare);
-
-                while((board[selectedSquare][0].numTokens!=minNumOfTokens))
+            printf("\nPlayer %d please select a square: ", j);
+            scanf("%d", &selectedSquare);
+            
+            printf("Test");
+            
+            while (board[selectedSquare][0].numTokens != minNumOfTokens)
+            {
+                printf("Please select a valid square: ");
+                scanf("%d", &selectedSquare);
+            }
+            
+            if (board[selectedSquare][0].numTokens != 0)
+            {
+                while (board[selectedSquare][0].stack->col == players[j].col)
                 {
-                   printf("Player %d please select a square\n",j);
-                   scanf("%d",&selectedSquare);
+                    printf("Please select a valid square: ");
+                    scanf("%d", &selectedSquare);
                 }
-                if(board[selectedSquare][0].numTokens!=0)
-                {
-                    while(board[selectedSquare][0].stack->col==players[j].col)
-                    {
-                        printf("Player %d please select a valid square\n",j);
-                        scanf("%d",&selectedSquare);
-                    }
-                }
-                
-                
-                board[selectedSquare][0].stack=(token*)malloc(sizeof(token));
-                board[selectedSquare][0].stack->col=players[j].col;
-                board[selectedSquare][0].numTokens++;
-        
-
+            }
+            
+            printf("Getting there");
+            
+            board[selectedSquare][0].stack = (token *) malloc(sizeof(token));
+            board[selectedSquare][0].stack->col = players[j].col;
+            board[selectedSquare][0].numTokens++;
+            
+            printf("Placed");
+            
             //updates the minimum number of Tokens
-            if(((numPlayers*i)+j+1)%NUM_ROWS==0)
+            if (((numPlayers * i) + j + 1)%NUM_ROWS == 0)
+
             {
                 minNumOfTokens++;
             }
             
             print_board(board);
         }
+
         
     }
+    
+
+
     
 
 }
@@ -140,31 +146,68 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
  */
 
 void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
-    //PartA
-    //check while if anyone has won
-    //Check the same for three colors, print winner depending on the color they have chosen to comparing to the three chosen color
-    //counter=0
-    //while counter<numPlayers
+
+    //used to control whos turn it is and what names are printed etc
+    int playerTurn = 0;
+    //holds the dice roll number
+    int dice;
+    //variable to check if they want to do the optional move
+    int optionalMove;
     
-    //Part B 
-    //dice roll functionality
-    //Ask if want option to move his own token 
-    //Ask row and column
-    //Ask up or down
-    //Check for obstacle squares
-    //Catch for out of bounds
-    //Throw back to selection menu for the choosing desired token
-    //if they don't give a valid response ask again
+    srand(time(NULL));
     
-    //Part C
-    //Check if any tokens in the row selected by dice (ASK THE DOC FOR RULES) re-roll if no tokens in row
-    //Tell the dice roll row to the player
-    //Do while Ask which column then want to make sure there is a token in it
-    //Check for obstacles squares
-    //Move token forward
-    //Make sure the token that had the moved token has the correct token  
-    
-    
+    //while (/*check win*/)
+    //{
+        //we set playerTurn to 0 here so that we get a loop of turns e.g. 1->2->3->1->2->3->1... etc
+        playerTurn = 0;
+        
+        while (playerTurn < numPlayers)
+        {
+            //setting optionalMove to 2 intially so that the while loop where the player chooses whether they want to do the optionalMove enters correctly, see below
+            optionalMove = 2;
+            
+            printf("It is now %s's turn!\n\n", players[playerTurn].playerName);
+            
+            //PART A
+            dice = rand()%6;
+            printf("The dice was rolled, and you got the number (and row) %d!\n\n", dice);
+            
+            
+            //PART B
+            printf("Would you like to do the optional move? (Move one of your tokens 'sideways').");
+            //while loop will enter since optionalMove does not equal 1 or 0
+            while (optionalMove != 0 && optionalMove != 1)
+            {
+                printf("\n(1 for yes, 0 for no): ");
+                scanf("%d", &optionalMove);
+            }
+            
+            if (optionalMove == 1)
+            {
+                //optionalMove code
+            }
+            
+            
+            
+            //PART C
+            printf("\nNow you must select a column which has the token you want to move one space forward!\n");
+            printf("(Remember, you rolled row %d on the dice!)\n", dice);
+            
+            //mandatoryMove code
+            
+            
+            
+            //END OF TURN MISC
+            playerTurn++;
+            
+            printf("Here is what the board currently looks like!\n\n");
+            print_board(board);
+            
+        }
+        
+        
+        
+    //}
     
     
 }
