@@ -71,49 +71,58 @@ void printLine(){
  *        numPlayers - the number of players  
  */
 void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
-    int counter = 0;
-    int rowChoice;
-    char colour;
+    int minNumOfTokens = 0;
+    int selectedSquare = 0;
     
-    while (counter < numPlayers)
+    for (int k=0;k<9;k++)
     {
-        printf("%s:Which row (in the first column), would you like to place your first token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
-        scanf("%d", &rowChoice);
-        
-        //prevents player from putting a token in a square where another token already lies
-        while (board[rowChoice][0].stack != NULL)
+        for (int l=0;l<6;l++)
         {
-            printf("There is already a token there, choose another row now: ");
-            scanf("%d", &rowChoice);
+            board[k][l].numTokens = 0;
         }
-        
-        board[rowChoice][0].stack = &players[counter].col;
-  
-        counter++;
     }
     
-    print_board(board);
-    
-    counter = 0;
-    
-    while (counter < numPlayers)
+    for (int i=0;i<4;i++)
     {
-        printf("%sWhich row (in the first column), would you like to place your second token?(Choose between 0 and 5 inclusive): ", players[counter].playerName);
-        scanf("%d", &rowChoice);
-        
-        //prevents player from putting a token in a square where another token already lies
-        /*while (board[rowChoice][0].stack != NULL)
+        for (int j=0;j<numPlayers;j++)
         {
-            printf("There is already a token there, choose another row now: ");
-            scanf("%d", &rowChoice);
-        }*/
-        
-        board[rowChoice][0].stack = &players[counter].col;
-  
-        counter++;
+            printf("\nPlayer %d please select a square: ", j);
+            scanf("%d", &selectedSquare);
+            
+            printf("Test");
+            
+            while (board[selectedSquare][0].numTokens != minNumOfTokens)
+            {
+                printf("Please select a valid square: ");
+                scanf("%d", &selectedSquare);
+            }
+            
+            if (board[selectedSquare][0].numTokens != 0)
+            {
+                while (board[selectedSquare][0].stack->col == players[j].col)
+                {
+                    printf("Please select a valid square: ");
+                    scanf("%d", &selectedSquare);
+                }
+            }
+            
+            printf("Getting there");
+            
+            board[selectedSquare][0].stack = (token *) malloc(sizeof(token));
+            board[selectedSquare][0].stack->col = players[j].col;
+            board[selectedSquare][0].numTokens++;
+            
+            printf("Placed");
+            
+            //updates the minimum number of Tokens
+            if (((numPlayers * i) + j + 1)%NUM_ROWS == 0)
+            {
+                minNumOfTokens++;
+            }
+            
+            print_board(board);
+        }
     }
-    
-    print_board(board);
 }
         
     
@@ -139,8 +148,8 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     
     srand(time(NULL));
     
-    while (/*check win*/)
-    {
+    //while (/*check win*/)
+    //{
         //we set playerTurn to 0 here so that we get a loop of turns e.g. 1->2->3->1->2->3->1... etc
         playerTurn = 0;
         
@@ -190,7 +199,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
         
         
         
-    }
+    //}
     
     
     
