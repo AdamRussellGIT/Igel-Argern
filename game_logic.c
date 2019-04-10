@@ -22,13 +22,18 @@ char print_token(token *t){
     return '\0';
 }
 
-/*struct stack_elem * push(player players[], int go, struct stack_elem *top){
-    struct stack_elem *curr = top;
-    top = malloc(sizeof(stack));
-    top->col = players[go].col;
-    top->next = curr;
-    return top;
-}/*
+void push(square board[NUM_ROWS][NUM_COLUMNS], int i, int j, struct token *top){    
+    top->next = board[i][j].stack;
+    board[i][j].stack = top;    
+}
+
+void pop(square board[NUM_ROWS][NUM_COLUMNS], int i, int j, struct token *top){ 
+    struct token *temp = malloc(sizeof(struct token));
+    temp = board[i][j].stack;
+    board[i][j].stack = board[i][j].stack->next;
+    free(temp);
+}
+
 
 
 /*
@@ -72,10 +77,6 @@ void printLine(){
   printf("   -------------------------------------\n");  
 }
 
-/*//pointer to the top of the stack
-struct stack_elem *top = NULL;
-//pointer to the current element of the stack
-struct stack_elem *curr = NULL;*/
 
 
 /*
@@ -89,6 +90,8 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
     int minNumOfTokens = 0;
     int selectedSquare = 0;
     
+    struct token *top = NULL;
+    
     for (int k=0;k<9;k++)
     {
         for (int l=0;l<6;l++)
@@ -96,6 +99,7 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
             board[k][l].numTokens = 0;
         }
     }
+    
     
     for (int i=0;i<4;i++)
     {
@@ -125,13 +129,12 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
                 }
             }
             
-            board[selectedSquare][0].stack = (token *) malloc(sizeof(token));
-            board[selectedSquare][0].stack->col = players[j].col;
-            board[selectedSquare][0].numTokens++;
-            /*top = push(players, j, top);
-            board[selectedSquare][0].stack->col = top->col;*/
-            
-            
+            // pushing
+            token *t = (token *) malloc(sizeof(token));
+            t->col = players[j].col;
+            t->next = NULL;
+            push(board, selectedSquare, 0, t);
+            board[selectedSquare][0].numTokens++;       
             
             //updates the minimum number of Tokens
             if (((numPlayers * i) + j + 1)%NUM_ROWS == 0)
@@ -168,6 +171,10 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     int columnOptional;
     int upOrDown;
     
+    struct token *top;
+    
+    int rowCheck, sum;
+    
     int mandatoryColumn;
     int win=0;
     int a;
@@ -193,6 +200,22 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             
             //PART A
             dice = rand()%6;
+            sum = 0;
+            for (rowCheck=0;rowCheck<8;rowCheck++)
+            {
+                sum += board[dice][rowCheck].numTokens;
+            }
+            
+            while (sum == 0)
+            {
+                printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n", dice);
+                dice = rand()%6;
+                
+                for (rowCheck=0;rowCheck<8;rowCheck++)
+                {
+                    sum += board[dice][rowCheck].numTokens;
+                }
+            }
             printf("The dice was rolled, and you got the number (and row) %d!\n\n", dice);
             
             
@@ -236,13 +259,35 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 if (rowOptional == 0)
                 {
                     printf("This token can only be moved down. It will now be moved down for you!\n");
-                    board[rowOptional+1][columnOptional].stack->col = board[rowOptional][columnOptional].stack->col;
+                    token *t = (token *) malloc(sizeof(token));
+                    t->col = board[rowOptional][columnOptional].stack->col;
+                    t->next = NULL;
+                    push(board, rowOptional+1, columnOptional, t);
+                    board[rowOptional+1][columnOptional].numTokens++;
+            
+                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+            
+                    if (board[rowOptional][columnOptional].numTokens != 0)
+                    {
+                        board[rowOptional][columnOptional].numTokens--;
+                    }
                 }
                 
                 else if (rowOptional == 5)
                 {
                     printf("This token can only be moved up. It will now be moved up for you!\n");
-                    board[rowOptional-1][columnOptional].stack->col = board[rowOptional][columnOptional].stack->col;
+                    token *t = (token *) malloc(sizeof(token));
+                    t->col = board[rowOptional][columnOptional].stack->col;
+                    t->next = NULL;
+                    push(board, rowOptional-1, columnOptional, t);
+                    board[rowOptional-1][columnOptional].numTokens++;
+            
+                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+            
+                    if (board[rowOptional][columnOptional].numTokens != 0)
+                    {
+                        board[rowOptional][columnOptional].numTokens--;
+                    }
                 }
                 
                 else
@@ -258,19 +303,56 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                     
                     if (upOrDown == 1)
                     {
-                        board[rowOptional-1][columnOptional].stack->col = board[rowOptional][columnOptional].stack->col;
+                        token *t = (token *) malloc(sizeof(token));
+                        t->col = board[rowOptional][columnOptional].stack->col;
+                        t->next = NULL;
+                        push(board, rowOptional-1, columnOptional, t);
+                        board[rowOptional-1][columnOptional].numTokens++;
+            
+                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+            
+                        if (board[rowOptional][columnOptional].numTokens != 0)
+                        {
+                            board[rowOptional][columnOptional].numTokens--;
+                        }
                     }
                     
                     else if (upOrDown == 2)
                     {
-                        board[rowOptional+1][columnOptional].stack->col = board[rowOptional][columnOptional].stack->col;
+                        token *t = (token *) malloc(sizeof(token));
+                        t->col = board[rowOptional][columnOptional].stack->col;
+                        t->next = NULL;
+                        push(board, rowOptional+1, columnOptional, t);
+                        board[rowOptional+1][columnOptional].numTokens++;
+            
+                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+            
+                        if (board[rowOptional][columnOptional].numTokens != 0)
+                        {
+                            board[rowOptional][columnOptional].numTokens--;
+                        }
                     }
                 }
             }
             
             print_board(board);
             
+            sum = 0;
+            for (rowCheck=0;rowCheck<8;rowCheck++)
+            {
+                sum += board[dice][rowCheck].numTokens;
+            }
             
+            while (sum == 0)
+            {
+                printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n", dice);
+                dice = rand()%6;
+                
+                for (rowCheck=0;rowCheck<8;rowCheck++)
+                {
+                    sum += board[dice][rowCheck].numTokens;
+                }
+            }
             
             //PART C
             printf("\nNow you must select a column which has the token you want to move one space forward!\n");
@@ -292,9 +374,20 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             }
             
             printf("\nYou chose to move the token in position (%d, %d) one column forward!", dice, mandatoryColumn);
-            board[dice][mandatoryColumn+1].stack = (token *) malloc(sizeof(token));
-            board[dice][mandatoryColumn+1].stack->col = board[dice][mandatoryColumn].stack->col;
+            //board[dice][mandatoryColumn+1].stack = (token *) malloc(sizeof(token));
+            //board[dice][mandatoryColumn+1].stack->col = board[dice][mandatoryColumn].stack->col;
+            token *t = (token *) malloc(sizeof(token));
+            t->col = board[dice][mandatoryColumn].stack->col;
+            t->next = NULL;
+            push(board, dice, mandatoryColumn+1, t);
             board[dice][mandatoryColumn+1].numTokens++;
+           
+            pop(board, dice, mandatoryColumn, board[dice][mandatoryColumn].stack);
+            if (board[dice][mandatoryColumn].numTokens != 0)
+            {
+                board[dice][mandatoryColumn].numTokens--;
+            }
+            
             
             if ((mandatoryColumn+1) == 8)
             {
