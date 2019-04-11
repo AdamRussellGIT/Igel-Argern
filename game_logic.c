@@ -190,6 +190,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     {
         //we set playerTurn to 0 here so that we get a loop of turns e.g. 1->2->3->1->2->3->1... etc
         playerTurn = 0;
+        printf("\nThe type of the square (2,4) is %d\n",board[2][4].type);
         
         while ((playerTurn < numPlayers) && (win == 0))
         {
@@ -382,6 +383,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             push(board, dice, mandatoryColumn+1, t);
             board[dice][mandatoryColumn+1].numTokens++;
            
+           
             pop(board, dice, mandatoryColumn, board[dice][mandatoryColumn].stack);
             if (board[dice][mandatoryColumn].numTokens != 0)
             {
@@ -394,7 +396,27 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 players[playerTurn].numTokensLastCol++;
             }
             
-            
+            if((board[dice][mandatoryColumn].type==board[2][4].type)||(board[dice][mandatoryColumn].type==board[3][0].type)||(board[dice][mandatoryColumn].type==board[4][2].type)||(board[dice][mandatoryColumn].type==board[5][3].type)||(board[dice][mandatoryColumn].type==board[6][1].type)||(board[dice][mandatoryColumn].type==board[7][5].type))
+            {
+                board[dice][mandatoryColumn].stack->type=1;
+                
+                int rowP;
+                int columnP;
+                
+                int rowCorr=((6-dice)-1); //Row Correction 
+                int colCorr=((8-mandatoryColumn)-1); //Column Correction
+                
+                for(rowP=0;rowP<rowCorr;rowP++)
+                {
+                    for(columnP=0;columnP<colCorr;columnP++)
+                    {
+                        if(board[rowP][columnP].stack==NULL)
+                        {
+                            board[dice][mandatoryColumn].stack->type=0;
+                        }
+                    }
+                }
+            }
             
             
             //END OF TURN MISC
@@ -414,8 +436,8 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
         }
         
         
-        
     }
+}
     
     
     
@@ -462,4 +484,5 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
         
     
     //}
-}
+
+
