@@ -1,9 +1,9 @@
-/*BLAHBLAHBLAH
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-//I think blah is a great idea!
+
 /* 
  * File:   main.c
  * Author: lpasqua
@@ -12,6 +12,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "game_init.h"
 #include "game_logic.h"
 
@@ -19,7 +21,12 @@
 /*
  * 
  */
+
+
+
 int main(int argc, char** argv) {
+ 
+    srand(time(NULL));
     
     //the board is defined as a 2-Dimensional array of squares
     square board[NUM_ROWS][NUM_COLUMNS];
@@ -38,15 +45,6 @@ int main(int argc, char** argv) {
     
     //creates the players
     numPlayers = initialize_players(players);
-    
-    printf("Num players = %d\n\n", numPlayers);
-    printf("%s\n, %d\n\n", players[0].playerName, players[0].col);
-    printf("%s\n, %d\n\n", players[1].playerName, players[1].col);
-    printf("%s\n, %d\n\n", players[2].playerName, players[2].col);
-    printf("%s\n, %d\n\n", players[3].playerName, players[3].col);
-    printf("%s\n, %d\n\n", players[4].playerName, players[4].col);
-    printf("%s\n, %d\n\n", players[5].playerName, players[5].col);
-    
     
     
     //asks each player to place their tokens

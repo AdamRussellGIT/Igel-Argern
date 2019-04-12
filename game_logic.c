@@ -96,7 +96,7 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
     {
         for (int l=0;l<6;l++)
         {
-            board[k][l].numTokens = 0;
+            board[l][k].numTokens = 0;
         }
     }
     
@@ -173,7 +173,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     
     struct token *top;
     
-    int rowCheck, sum;
+    int rowCheck, sum, obstacleCheck;
     
     int mandatoryColumn;
     int win=0;
@@ -190,33 +190,37 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     {
         //we set playerTurn to 0 here so that we get a loop of turns e.g. 1->2->3->1->2->3->1... etc
         playerTurn = 0;
-        printf("\nThe type of the square (2,4) is %d\n",board[2][4].type);
         
-        while ((playerTurn < numPlayers) && (win == 0))
+        while (playerTurn < numPlayers && win == 0)
         {
             //setting optionalMove to 2 intially so that the while loop where the player chooses whether they want to do the optionalMove enters correctly, see below
             optionalMove = 2;
             
-            printf("It is now %s's turn!\n\n", players[playerTurn].playerName);
+            printf("It is your turn, %s\n", players[playerTurn].playerName);
             
             //PART A
             dice = rand()%6;
+            
+            //sum is set to 0 initially
             sum = 0;
+            //we go through the current row and add up the amount of tokens in the entire row
             for (rowCheck=0;rowCheck<8;rowCheck++)
             {
                 sum += board[dice][rowCheck].numTokens;
             }
             
+            //while sum is equal to 0 we have to pick a new row for the player so that they can make their move
             while (sum == 0)
             {
                 printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n", dice);
                 dice = rand()%6;
                 
+                //we now check the new row to see if there are tokens in it 
                 for (rowCheck=0;rowCheck<8;rowCheck++)
                 {
                     sum += board[dice][rowCheck].numTokens;
                 }
-            }
+            }   //the while loop continues until a valid row is found
             printf("The dice was rolled, and you got the number (and row) %d!\n\n", dice);
             
             
@@ -255,6 +259,46 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                     scanf("%d", &rowOptional);
                     printf("\nColumn: ");
                     scanf("%d", &columnOptional);
+                }
+                
+                //we check if the current square the player is trying to move a token on is an obstacle square
+                if (board[rowOptional][columnOptional].type == OBSTACLE)
+                {
+                    //we set obstacleCheck = 0 initially
+                    obstacleCheck = 0;
+                    for (int p=0;p<6;p++)
+                    {
+                        for (int q=0;q<columnOptional;q++)
+                        {
+                            //obstacleCHeck checks if there are any tokens left in the squares behind the current obstacle square
+                            obstacleCheck += board[p][q].numTokens;
+                        }
+                    }
+
+                    //if there are tokens left behind the current obstacle sqaure
+                    if (obstacleCheck > 0)
+                    {
+                        printf("\nYou cannot move the token in this position as it is in an Obstacle square and there are tokens behind you, choose another token now!\n");
+
+                        //we get the player to pick another token which is not in an obstacle square
+                        while (board[rowOptional][columnOptional].type == OBSTACLE)
+                        {
+                            do
+                            {
+                                printf("Select a valid Row: ");
+                                scanf("%d", &rowOptional);
+                                printf("Select a valid Column: ");
+                                scanf("%d", &columnOptional);
+                                //we make sure they pick a vlaid square, and that it has tokens on it
+                            } while ((rowOptional < 0 || rowOptional > 8) && (mandatoryColumn < 0 || mandatoryColumn < 8) && (board[dice][mandatoryColumn].numTokens == 0));
+                        }
+                    }
+                    
+                    //if the token is in an obstacle sqaure, BUT it is allowed to move, we set this square to now be normal
+                    else
+                    {
+                        board[rowOptional][columnOptional].type = NORMAL;
+                    }
                 }
                 
                 if (rowOptional == 0)
@@ -338,19 +382,27 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             
             print_board(board);
             
+            /*After the optional move, we need to check if the row the player got at the beginning of their turn still has a token in it.
+             They may have moved the only token in their given row out of the row, in which case they now need a new row for the mandatory move.*/
+            
+            //we set sum = 0 again
             sum = 0;
             for (rowCheck=0;rowCheck<8;rowCheck++)
             {
+                //check all squares in given row to check if their are tokens left
                 sum += board[dice][rowCheck].numTokens;
             }
             
+            //if there are no tokens
             while (sum == 0)
             {
-                printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n", dice);
+                //we find the player a new role
+                printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n\n", dice);
                 dice = rand()%6;
                 
                 for (rowCheck=0;rowCheck<8;rowCheck++)
                 {
+                    //check if the new row has tokens
                     sum += board[dice][rowCheck].numTokens;
                 }
             }
@@ -368,10 +420,89 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 scanf("%d", &mandatoryColumn);
             }
             
-            while (mandatoryColumn < 0 || mandatoryColumn >= 9)
+            while (mandatoryColumn < 0 || mandatoryColumn > 7)
             {
                 printf("\nSelect a valid column: ");
                 scanf("%d", &mandatoryColumn);
+            }
+            
+            //check if the square they've chosen is an obstacle square
+            if (board[dice][mandatoryColumn].type == OBSTACLE)
+            {
+                //set obstacleCheck = 0
+                obstacleCheck = 0;
+                for (int p=0;p<6;p++)
+                {
+                    for (int q=0;q<mandatoryColumn;q++)
+                    {
+                        //we check if there are any tokens left behind this square
+                        obstacleCheck += board[p][q].numTokens;
+                    }
+                }
+
+                //if there are tokens left
+                if (obstacleCheck > 0)
+                {
+                    printf("\nYou cannot move the token in this position as it is in an Obstacle square and there are tokens behind you, choose another token now!\n\n");
+                    
+                    //set sum = 0
+                    sum = 0;
+                    for (rowCheck=0;rowCheck<8;rowCheck++)
+                    {
+                        //check if there are any tokens in this row
+                        sum += board[dice][rowCheck].numTokens;
+                    }
+
+                    //we take away the number of tokens on the current sqaure, as it is an obstacle square that we already know has tokens that cannot be moved
+                    sum -= board[dice][mandatoryColumn].numTokens;
+            
+                    //if the value of sum is = 0 after we take away the obstacle square tokens, we know there are no tokens in this row which can be moved
+                    //we must then get a new row for them
+                    while (sum == 0)
+                    {
+                        printf("\nSince there are no tokens left in row %d, the dice will be re re-rolled until a row which contains tokens is found!\n", dice);
+                        dice = rand()%6;
+                
+                        for (rowCheck=0;rowCheck<8;rowCheck++)
+                        {
+                            //we add up all the tokens in our new row, minus any tokens in obstacle squares
+                            if (board[dice][rowCheck].type != OBSTACLE)
+                            {
+                               sum += board[dice][rowCheck].numTokens; 
+                            }  
+                        }
+                    }
+                    
+                    //once we find a new row, we tell them
+                    printf("You now have row %d!", dice);
+                    
+                    printf("\nSelect column: ");
+                    scanf("%d", &mandatoryColumn);
+                    
+                    //if they choose a square with no tokens, we make them choose again
+                    while (board[dice][mandatoryColumn].numTokens == 0)
+                    {
+                        printf("Select a valid column: ");
+                        scanf("%d", &mandatoryColumn);
+                    }
+                    
+                    //if they choose another obstacle square, we make them choose a square which has tokens NOT in an obstacle square
+                    //we know this square exists as the program would not have chosen this row if there wasn't one
+                    while (board[dice][mandatoryColumn].type == OBSTACLE)
+                    {
+                        do
+                        {
+                            printf("\nSelect a valid Column: ");
+                            scanf("%d", &mandatoryColumn);
+                        } while ((mandatoryColumn < 0 || mandatoryColumn > 8) && (board[dice][mandatoryColumn].type == OBSTACLE));
+                    }      
+                }
+                
+                //if it was an obstacle square but the token was allowed to move out of it, we set this squares type to be NORMAL
+                else
+                {
+                    board[dice][mandatoryColumn].type = NORMAL;
+                }
             }
             
             printf("\nYou chose to move the token in position (%d, %d) one column forward!", dice, mandatoryColumn);
@@ -383,7 +514,6 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             push(board, dice, mandatoryColumn+1, t);
             board[dice][mandatoryColumn+1].numTokens++;
            
-           
             pop(board, dice, mandatoryColumn, board[dice][mandatoryColumn].stack);
             if (board[dice][mandatoryColumn].numTokens != 0)
             {
@@ -393,30 +523,43 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             
             if ((mandatoryColumn+1) == 8)
             {
-                players[playerTurn].numTokensLastCol++;
-            }
-            
-            if((board[dice][mandatoryColumn].type==board[2][4].type)||(board[dice][mandatoryColumn].type==board[3][0].type)||(board[dice][mandatoryColumn].type==board[4][2].type)||(board[dice][mandatoryColumn].type==board[5][3].type)||(board[dice][mandatoryColumn].type==board[6][1].type)||(board[dice][mandatoryColumn].type==board[7][5].type))
-            {
-                board[dice][mandatoryColumn].stack->type=1;
-                
-                int rowP;
-                int columnP;
-                
-                int rowCorr=((6-dice)-1); //Row Correction 
-                int colCorr=((8-mandatoryColumn)-1); //Column Correction
-                
-                for(rowP=0;rowP<rowCorr;rowP++)
+                if (players[0].col == board[dice][mandatoryColumn+1].stack->col)
                 {
-                    for(columnP=0;columnP<colCorr;columnP++)
-                    {
-                        if(board[rowP][columnP].stack==NULL)
-                        {
-                            board[dice][mandatoryColumn].stack->type=0;
-                        }
-                    }
+                    players[0].numTokensLastCol++;
+                }
+                
+                else if (players[1].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[1].numTokensLastCol++;
+                }
+                
+                else if (players[2].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[2].numTokensLastCol++;
+                }
+                
+                else if (players[3].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[3].numTokensLastCol++;
+                }
+                
+                else if (players[4].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[5].numTokensLastCol++;
+                }
+                
+                else if (players[5].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[5].numTokensLastCol++;
+                }
+                
+                else if (players[6].col == board[dice][mandatoryColumn+1].stack->col)
+                {
+                    players[6].numTokensLastCol++;
                 }
             }
+            
+            
             
             
             //END OF TURN MISC
@@ -429,16 +572,12 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 if (players[a].numTokensLastCol == 3)
                 {
                     win = 1;
-                    printf("Congratulations %s, you have Won the game!", players[a].playerName);
+                    printf("\n\n\n\nThe winner of the game is %s", players[a].playerName);
                 }
-            }
-            
+            }     
         }
-        
-        
     }
 }
-    
     
     
     
@@ -484,5 +623,4 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
         
     
     //}
-
 
