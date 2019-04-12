@@ -22,16 +22,22 @@ char print_token(token *t){
     return '\0';
 }
 
+/*Function defenition for pushing the tokens on top of the stack*/
+/*The arguments for the functions are the board, variables used for the row, column and dice of both the optional
+ * and mandatory moves and pointer to the top token */
 void push(square board[NUM_ROWS][NUM_COLUMNS], int i, int j, struct token *top){    
-    top->next = board[i][j].stack;
-    board[i][j].stack = top;    
+    top->next = board[i][j].stack; /*Assigning the stack to the next which is pointing to top*/
+    board[i][j].stack = top;    /*Assigning top onto the stack*/ 
 }
 
+/*Function defenition for popping token elements from the stack*/
+/*The arguments for the functions are the board, variables used for the row, column and dice of both the optional
+ * and mandatory moves and pointer to the top token */
 void pop(square board[NUM_ROWS][NUM_COLUMNS], int i, int j, struct token *top){ 
-    struct token *temp = malloc(sizeof(struct token));
-    temp = board[i][j].stack;
-    board[i][j].stack = board[i][j].stack->next;
-    free(temp);
+    struct token *temp = malloc(sizeof(struct token)); /*Allocating space for a temporary pointer to the token strut through malloc*/
+    temp = board[i][j].stack; /*Assigning the the stack at a board position to the temporary variable*/
+    board[i][j].stack = board[i][j].stack->next; /*Assigning the pointer next which points to the stack at a certain board position to the stack of a certain board position specified by i and j*/
+    free(temp); /*Using the free function to free the variable that was temporarily stored in the temp variable*/
 }
 
 
@@ -86,42 +92,55 @@ void printLine(){
  *        players - the array of the players
  *        numPlayers - the number of players  
  */
+
+/*Function defenition for placing the tokens on the board */
+/*The arguments that are included within the function are the board, the players array of type player,the variable for the number of players*/
 void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPlayers){
-    int minNumOfTokens = 0;
-    int selectedSquare = 0;
+    int minNumOfTokens = 0; /*The minimum number of players variable*/
+    int selectedSquare = 0; /*Selected Square variable*/
     
-    struct token *top = NULL;
+    struct token *top = NULL; /*Assigning the the pointer top to token to NULL */
     
+    /*Iterating through the entire board (rows and columns)
+     and assigning the number of tokens in each square to 0 in
+     order to prevent any garbage values to cause possible errors*/
     for (int k=0;k<9;k++)
     {
         for (int l=0;l<6;l++)
         {
-            board[l][k].numTokens = 0;
+            board[l][k].numTokens = 0; /*Assigning all squares' number of tokens variable to zero*/
         }
     }
     
     
-    for (int i=0;i<4;i++)
+    /*Code block asking the users where the wish to place their tokens in order to set up the game*/
+    for (int i=0;i<4;i++) /*Iterating 4 times as there is 4 tokens for eahc player*/
     {
+        /*Iterating through each player asking them for their choice*/
         for (int j=0;j<numPlayers;j++)
         {
             printf("\nPlayer %d please select a square: ", j);
             scanf("%d", &selectedSquare);
             
+            /*Keep asking the player to select a square within the bounds of the game*/
             while (selectedSquare < 0 || selectedSquare > 5)
             {
                 printf("Select a valid square: ");
                 scanf("%d", &selectedSquare);
             }
             
+            /*While the number of tokens of a square selected by the user is not equal to the minimum number of tokens*/
+            /*This prevents over-stacking when setting up the game which is one of the game conditions */
             while (board[selectedSquare][0].numTokens != minNumOfTokens)
             {
                 printf("Please select a valid square: ");
                 scanf("%d", &selectedSquare);
             }
             
+            /*If the number of tokens of a square selected by the user is not equal to zero*/
             if (board[selectedSquare][0].numTokens != 0)
-            {
+            {   /*While the color on top of the stack is equal to the current players color*/
+                /*This is to prevent same color stacking*/
                 while (board[selectedSquare][0].stack->col == players[j].col)
                 {
                     printf("Please select a valid square: ");
@@ -129,15 +148,16 @@ void place_tokens(square board[NUM_ROWS][NUM_COLUMNS], player players[], int num
                 }
             }
             
-            // pushing
-            token *t = (token *) malloc(sizeof(token));
-            t->col = players[j].col;
-            t->next = NULL;
-            push(board, selectedSquare, 0, t);
-            board[selectedSquare][0].numTokens++;       
+            //Pushing
+            token *t = (token *) malloc(sizeof(token)); /*Allocating space for a pointer t to token*/
+            t->col = players[j].col; /*Assigning the current players color onto t which points to a color*/
+            t->next = NULL; /*Assigning the t's pointer to next to NULL*/
+            push(board, selectedSquare, 0, t); /*Calling the push function with the selected square, column 0 and row token*/
+            board[selectedSquare][0].numTokens++; /*Incrementing the number of tokens on the selected square on column 0*/      
             
-            //updates the minimum number of Tokens
-            if (((numPlayers * i) + j + 1)%NUM_ROWS == 0)
+            //Updates the minimum number of Tokens
+            if (((numPlayers * i) + j + 1)%NUM_ROWS == 0) /*If all the squares on the board have the same number of tokens
+                                                           increment the minimum number of tokens*/
             {
                 minNumOfTokens++;
             }
@@ -167,25 +187,36 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
     int dice;
     //variable to check if they want to do the optional move
     int optionalMove;
+    //variable for the optional Row
     int rowOptional;
+    //variable for the optional Column
     int columnOptional;
+    //variable for either up or down
     int upOrDown;
     
+    //pointer top to token 
     struct token *top;
     
+    //variable for the row check, sum and obstacle check
     int rowCheck, sum, obstacleCheck;
     
+    //variable for the mandatory column
     int mandatoryColumn;
+    //Win variable used to confer if there has been a winner
     int win=0;
+    //variable a is used for indexing for the last column on the board to check for the winning condition
     int a;
     
-    srand(time(NULL));
+    srand(time(NULL)); //Seeding a random number
     
+    /*Assigning the number of tokens for each square in the last column to 0 in order to prevent 
+    garbage values from causing errors*/
     for (int z=0;z<numPlayers;z++)
     {
         players[z].numTokensLastCol = 0;
     }
     
+    //Execute this code while the win=0; in other words until there is a winner 
     while (win == 0)
     {
         //we set playerTurn to 0 here so that we get a loop of turns e.g. 1->2->3->1->2->3->1... etc
@@ -235,6 +266,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 scanf("%d", &optionalMove);
             }
             
+            //If the user chooses the optional move
             if (optionalMove == 1)
             {
                 printf("Please select which of your tokens you want to move up or down\n");
@@ -243,6 +275,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                 printf("\nColumn: ");
                 scanf("%d", &columnOptional);
                 
+                //Keep asking the user until he chooses a square that has a token on it
                 while (board[rowOptional][columnOptional].numTokens == 0)
                 {
                     printf("\nSelect a valid row and column!\n");
@@ -252,6 +285,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                     scanf("%d", &columnOptional);
                 }
                 
+                //Keep asking the user until he chooses another players token instead of his own
                 while (board[rowOptional][columnOptional].stack->col != players[playerTurn].col)
                 {
                     printf("\nSelect a valid row and column!\n");
@@ -301,86 +335,88 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                     }
                 }
                 
+                /*If the user chooses a token in row 0, only allowing them to move down*/
                 if (rowOptional == 0)
                 {
                     printf("This token can only be moved down. It will now be moved down for you!\n");
-                    token *t = (token *) malloc(sizeof(token));
-                    t->col = board[rowOptional][columnOptional].stack->col;
-                    t->next = NULL;
-                    push(board, rowOptional+1, columnOptional, t);
-                    board[rowOptional+1][columnOptional].numTokens++;
+                    token *t = (token *) malloc(sizeof(token)); //Allocating memory space and assigning it to pointer t to token
+                    t->col = board[rowOptional][columnOptional].stack->col; //Assigning the token color from the stack to the pointer color pointing to t
+                    t->next = NULL; //Assigning the next which points to t as NULL
+                    push(board, rowOptional+1, columnOptional, t); //Calling the push function with arguments board, optional row (plus one to move it down),optional column and t
+                    board[rowOptional+1][columnOptional].numTokens++; //Incrementing the number of tokens where the token moved using the optional move has been placed
             
-                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack); //Popping the token from it's original position after the optional move
             
-                    if (board[rowOptional][columnOptional].numTokens != 0)
+                    if (board[rowOptional][columnOptional].numTokens != 0) /*If the number of tokens of the optional square does not equal to zero*/
                     {
-                        board[rowOptional][columnOptional].numTokens--;
+                        board[rowOptional][columnOptional].numTokens--; //Decrement the number of tokens of the optional square
                     }
                 }
                 
                 else if (rowOptional == 5)
                 {
                     printf("This token can only be moved up. It will now be moved up for you!\n");
-                    token *t = (token *) malloc(sizeof(token));
-                    t->col = board[rowOptional][columnOptional].stack->col;
-                    t->next = NULL;
-                    push(board, rowOptional-1, columnOptional, t);
-                    board[rowOptional-1][columnOptional].numTokens++;
+                    token *t = (token *) malloc(sizeof(token)); //Allocating memory space and assigning it to pointer t to token
+                    t->col = board[rowOptional][columnOptional].stack->col; //Assigning the token color from the stack to the pointer color pointing to t
+                    t->next = NULL; //Assigning the next which points to t as NULL
+                    push(board, rowOptional-1, columnOptional, t); //Calling the push function with arguments board, optional row (plus one to move it down),optional column and t
+                    board[rowOptional-1][columnOptional].numTokens++; //Incrementing the number of tokens where the token moved using the optional move has been placed
             
-                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+                    pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack); //Popping the token from it's original position after the optional move
             
-                    if (board[rowOptional][columnOptional].numTokens != 0)
+                    if (board[rowOptional][columnOptional].numTokens != 0) /*If the number of tokens of the optional square does not equal to zero*/
                     {
-                        board[rowOptional][columnOptional].numTokens--;
+                        board[rowOptional][columnOptional].numTokens--; //Decrement the number of tokens of the optional square
                     }
                 }
                 
-                else
+                else /*Else ask the user to move the token up or down*/
                 {
                     printf("Press 1 to move this token UP one row, press 2 to move this token DOWN one row: ");
                     scanf("%d", &upOrDown);
                     
+                    /*Keep asking the user until he enters one of the valid responses defined in the while loop*/
                     while ((upOrDown != 1) && (upOrDown != 2))
                     {
                         printf("Press 1 to move this token UP one row, press 2 to move this token DOWN one row: ");
                         scanf("%d", &upOrDown);
                     }
                     
-                    if (upOrDown == 1)
+                    if (upOrDown == 1) //Moving the token UP
                     {
-                        token *t = (token *) malloc(sizeof(token));
-                        t->col = board[rowOptional][columnOptional].stack->col;
-                        t->next = NULL;
-                        push(board, rowOptional-1, columnOptional, t);
-                        board[rowOptional-1][columnOptional].numTokens++;
+                        token *t = (token *) malloc(sizeof(token)); //Allocating space for the pointer t which points to the token
+                        t->col = board[rowOptional][columnOptional].stack->col; //Assigning the token color from the stack to the pointer color pointing to t
+                        t->next = NULL; //Assigning the next which points to t as NULL
+                        push(board, rowOptional-1, columnOptional, t); //Calling the push function with arguments board, optional row (plus one to move it down),optional column and t
+                        board[rowOptional-1][columnOptional].numTokens++; //Incrementing the number of tokens where the token moved using the optional move has been placed (-1 for moving it up)
             
-                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack); //Popping the token from it's original position after the optional move
             
-                        if (board[rowOptional][columnOptional].numTokens != 0)
+                        if (board[rowOptional][columnOptional].numTokens != 0) /*If the number of tokens of the optional square does not equal to zero*/
                         {
-                            board[rowOptional][columnOptional].numTokens--;
+                            board[rowOptional][columnOptional].numTokens--; //Decrement the number of tokens of the optional square
                         }
                     }
                     
-                    else if (upOrDown == 2)
+                    else if (upOrDown == 2) //Moving the token DOWN
                     {
-                        token *t = (token *) malloc(sizeof(token));
-                        t->col = board[rowOptional][columnOptional].stack->col;
-                        t->next = NULL;
-                        push(board, rowOptional+1, columnOptional, t);
-                        board[rowOptional+1][columnOptional].numTokens++;
+                        token *t = (token *) malloc(sizeof(token)); //Allocating space for the pointer t which points to the token
+                        t->col = board[rowOptional][columnOptional].stack->col; //Assigning the token color from the stack to the pointer color pointing to t
+                        t->next = NULL; //Assigning the next which points to t as NULL
+                        push(board, rowOptional+1, columnOptional, t); //Calling the push function with arguments board, optional row (plus one to move it down),optional column and t
+                        board[rowOptional+1][columnOptional].numTokens++; //Incrementing the number of tokens where the token moved using the optional move has been placed (+1 for moving it down)
             
-                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack);
+                        pop(board, rowOptional, columnOptional, board[rowOptional][columnOptional].stack); //Popping the token from it's original position after the optional move
             
-                        if (board[rowOptional][columnOptional].numTokens != 0)
+                        if (board[rowOptional][columnOptional].numTokens != 0) /*If the number of tokens of the optional square does not equal to zero*/
                         {
-                            board[rowOptional][columnOptional].numTokens--;
+                            board[rowOptional][columnOptional].numTokens--; //Decrement the number of tokens of the optional square
                         }
                     }
                 }
             }
             
-            print_board(board);
+            print_board(board); //Printing the board
             
             /*After the optional move, we need to check if the row the player got at the beginning of their turn still has a token in it.
              They may have moved the only token in their given row out of the row, in which case they now need a new row for the mandatory move.*/
@@ -508,53 +544,60 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             printf("\nYou chose to move the token in position (%d, %d) one column forward!", dice, mandatoryColumn);
             //board[dice][mandatoryColumn+1].stack = (token *) malloc(sizeof(token));
             //board[dice][mandatoryColumn+1].stack->col = board[dice][mandatoryColumn].stack->col;
-            token *t = (token *) malloc(sizeof(token));
-            t->col = board[dice][mandatoryColumn].stack->col;
-            t->next = NULL;
-            push(board, dice, mandatoryColumn+1, t);
-            board[dice][mandatoryColumn+1].numTokens++;
+            token *t = (token *) malloc(sizeof(token)); //Allocating space for the pointer t which points to the token
+            t->col = board[dice][mandatoryColumn].stack->col; //Assigning the token color from the stack to the pointer color pointing to t
+            t->next = NULL; //Assigning the next which points to t as NULL
+            push(board, dice, mandatoryColumn+1, t); //Calling the push function with arguments board, dice as row ,mandatory column(plus one to move it forward) and t
+            board[dice][mandatoryColumn+1].numTokens++; //Incrementing the number of tokens where the token moved using the optional move has been placed (+1 for moving it down)
            
-            pop(board, dice, mandatoryColumn, board[dice][mandatoryColumn].stack);
-            if (board[dice][mandatoryColumn].numTokens != 0)
+            pop(board, dice, mandatoryColumn, board[dice][mandatoryColumn].stack); //Popping the token from it's original position after the mandatory move
+            if (board[dice][mandatoryColumn].numTokens != 0) /*If the number of tokens of the mandatory square does not equal to zero*/
             {
-                board[dice][mandatoryColumn].numTokens--;
+                board[dice][mandatoryColumn].numTokens--; //Decrement the number of tokens of the mandatory square
             }
             
-            
+            /*If the mandatory column +1 is equivalent to the last column 8*/
             if ((mandatoryColumn+1) == 8)
             {
+                //If the player 0's color is equal to the token color from the mandatory move
                 if (players[0].col == board[dice][mandatoryColumn+1].stack->col)
-                {
+                {   //Increment that player's count for the number of his token's in the last column
                     players[0].numTokensLastCol++;
                 }
-                
+                //If the player 1's color is equal to the token color from the mandatory move
                 else if (players[1].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[1].numTokensLastCol++;
                 }
-                
+                //If the player 2's color is equal to the token color from the mandatory move
                 else if (players[2].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[2].numTokensLastCol++;
                 }
-                
+                //If the player 3's color is equal to the token color from the mandatory move
                 else if (players[3].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[3].numTokensLastCol++;
                 }
-                
+                //If the player 4's color is equal to the token color from the mandatory move
                 else if (players[4].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[5].numTokensLastCol++;
                 }
-                
+                //If the player 5's color is equal to the token color from the mandatory move
                 else if (players[5].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[5].numTokensLastCol++;
                 }
-                
+                //If the player 6's color is equal to the token color from the mandatory move
                 else if (players[6].col == board[dice][mandatoryColumn+1].stack->col)
                 {
+                    //Increment that player's count for the number of his token's in the last column
                     players[6].numTokensLastCol++;
                 }
             }
@@ -562,65 +605,21 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
             
             
             
-            //END OF TURN MISC
+            //END OF TURN 
             playerTurn++;
-            
+           
             printf("\n\nHere is what the board currently looks like!\n\n");
             print_board(board);
+            //Iterating for the amount of players within the game
             for (a=0;a<numPlayers;a++)
             {
+                //If one of the player's variable is equal to 3 he has won the game;in other words he has three tokens in the last column - a winning condition
                 if (players[a].numTokensLastCol == 3)
                 {
-                    win = 1;
-                    printf("\n\n\n\nThe winner of the game is %s", players[a].playerName);
+                    win = 1; //Assigning win to 1 indicating that a player has won and the game concludes
+                    printf("\n\n\n\nThe winner of the game is %s", players[a].playerName); //Printing the winners name
                 }
             }     
         }
     }
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    //while(check for three of same colours in column 8, if yes print player with 3 colours as winner))
-    
-        //counter = 0 here
-           
-            //while(iterate through players counter < numPlayers)
-            //{
-                //PART A
-                //dice role functionality
-    
-                //PART B
-                //ask if want optional move
-                //if they do
-            
-                    //do while: input for row and column
-                    //CHECK OBSTACLE SQUARE TING
-                       //catch for if top of stack of board[row][colum] is not their token
-    
-                     //allow them to select up or down motion
-                        //if row 5 down or row 0 up, allow them,make them select token again
-    
-        
-                //PART C
-                //CHECK IF ROW HAS ANY TOKENS: ASK PASTRAMI
-    
-                //tell them the row they have
-        
-                //do while, until they pick a column that has tokens in it
-                //CHECK OBSTACLE SQUARE TING
-                    //move token at top of stack one column first
-                    //colum that had token moved is set correctly?
-    
-        
-            //print_board(board);
-        //counter++;
-        
-    
-    //}
-

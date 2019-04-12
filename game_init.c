@@ -52,14 +52,16 @@ int initialize_players(player players[]){
         if(players[i].playerName[strlen(players[i].playerName)]=='\n'){
             players[i].playerName[strlen(players[i].playerName)] = '\0';
         }
-        
+        /*getting the color of the player from the user*/
         printf("\nEnter the color for this player.\n");
         printf("(Enter 0 for Red, 1 for Blu, 2 for Green, 3 for Yellow, 4 for Pink, 5 for Orange).\n");
         printf("(Don't use the same color as another player).\n");
         scanf("%d", &colour);
         
-        fgetc(stdin);
+        fgetc(stdin); /*Eating the new line*/
         
+        /*Switch case used for the selection of colors by the user*/
+        /*The colors are representative by the colors provided by the game specification*/
         switch (colour) {
             case 0: players[i].col = RED;
                     break;
@@ -78,27 +80,29 @@ int initialize_players(player players[]){
             
             case 5: players[i].col = ORANGE;
                     break;
-            
+            /*Catch case if the user enters an invalid color*/
             default: printf("You did not enter a valid number, please close the program and try again :/\n");
                      break;
         }
         
-        if (i >= 1 && i < 5)
+        /*Asking the player if there is another player*/
+        /*This code occurs when at least 2 players have been entered (minimum two are required to play the game )*/
+        if (i >= 1 && i < 5) /*Greater or equal to 1 and less than 5*/
         {
             printf("\nIs there another player? (1 for yes, 0 for no): ");
-            do
+            do /*Keep asking the user for a valid response which is either 0 or 1; being the only valid responses*/
             {
                 scanf("%d", &morePlayers);
             } while (morePlayers != 1 && morePlayers != 0);
             
-            fgetc(stdin);
+            fgetc(stdin); /*Eating newline*/
             
-            if (morePlayers == 0)
+            if (morePlayers == 0) /*Case where there is no more players as indicated by the user the return value is 2*/
             {
                 return i+1;
             }
         }
-        i++;
+        i++; /*Incrementing i*/
     }
     
     
