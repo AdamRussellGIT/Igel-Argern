@@ -489,7 +489,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                         sum += board[dice][rowCheck].numTokens;
                     }
 
-                    //we take away the number of tokens on the current sqaure, as it is an obstacle square that we already know has tokens that cannot be moved
+                    //we take away the number of tokens on the current square, as it is an obstacle square that we already know has tokens that cannot be moved
                     sum -= board[dice][mandatoryColumn].numTokens;
             
                     //if the value of sum is = 0 after we take away the obstacle square tokens, we know there are no tokens in this row which can be moved
@@ -530,7 +530,7 @@ void play_game(square board[NUM_ROWS][NUM_COLUMNS], player players[], int numPla
                         {
                             printf("\nSelect a valid Column: ");
                             scanf("%d", &mandatoryColumn);
-                        } while ((mandatoryColumn < 0 || mandatoryColumn > 8) && (board[dice][mandatoryColumn].type == OBSTACLE));
+                        } while (mandatoryColumn < 0 || mandatoryColumn > 8);
                     }      
                 }
                 
