@@ -1,2 +1,2 @@
 # Igel-Argern
-hallo
+Implementation of the board game Igel-Argern in C.
